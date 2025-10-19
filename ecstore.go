@@ -1,8 +1,6 @@
 package ecstore
 
 import (
-	"errors"
-	"reflect"
 	"sync"
 )
 
@@ -27,11 +25,6 @@ type (
 	}
 )
 
-var (
-	ErrNoEntitiesProvided   = errors.New("store: no entities provided to the Add function")
-	ErrInvalidEntityPointer = errors.New("store: entity must be a non-nil pointer to a struct")
-)
-
 func New() EcStore {
 	store := ecStore{
 		store:   make(map[string][]Entity),
@@ -50,10 +43,6 @@ func (e *ecStore) Add(entities ...Entity) error {
 
 	for _, entity := range entities {
 		if entity == nil {
-			return ErrInvalidEntityPointer
-		}
-		isPtr := reflect.ValueOf(entity).Kind() == reflect.Pointer
-		if isPtr && reflect.ValueOf(entity).IsNil() {
 			return ErrInvalidEntityPointer
 		}
 		key, err := getTypeKey(entity)
@@ -79,14 +68,6 @@ func (e *ecStore) Remove(entities ...Entity) error {
 	defer e.mu.Unlock()
 
 	for _, entity := range entities {
-		if entity == nil {
-			return ErrInvalidEntityPointer
-		}
-		isPtr := reflect.ValueOf(entity).Kind() == reflect.Pointer
-		if isPtr && reflect.ValueOf(entity).IsNil() {
-			return ErrInvalidEntityPointer
-		}
-
 		key, err := getTypeKey(entity)
 		if err != nil {
 			return err
